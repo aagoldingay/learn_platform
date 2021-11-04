@@ -1,4 +1,4 @@
-# LEARN_PlATFORM
+# LEARN_PLATFORM
 
 At the time of creating problem space 01, I have 3 years of experience as a Platform / Systems / DevOps Engineer, and 1 year of experience as a Software Engineer using C#.
 
