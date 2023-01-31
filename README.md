@@ -2,7 +2,7 @@
 
 At the time of creating problem space 01, I have 3 years of experience as a Platform / Systems / DevOps Engineer, and 1 year of experience as a Software Engineer using C#.
 
-Although I have enjoyed learning about Azure, I hold the belief that online services hosted in the cloud should be exist in multiple cloud providers concurrently. Meaning, should Azure have an outage, the service remains operational thanks to hosting in AWS as well. I have come to refer to platforms achieving this as being "cloud agnostic". A quick Google search shows I'm not the only one!
+Although I have enjoyed learning about Azure, I hold the belief that online services hosted in the cloud should exist in multiple cloud providers concurrently. Meaning, should Azure have an outage, the service remains operational thanks to hosting in AWS as well. I have come to refer to platforms achieving this as being "cloud agnostic". A quick Google search shows I'm not the only one!
 
 I intend for this repository to be a playground to advance my practical knowledge of Platform Engineering using multiple cloud providers, since I have, thus far, lacked the professional opportunities to deep dive the likes of AWS or GCP.
 
@@ -14,6 +14,8 @@ Each 'problem space' should fulfill the following requirements:
 
 - Be specific.
     - A problem should be well defined, with a purposefully small scope.
+- Be cost effective
+    - Cloud is not cheap, which makes it require more effort or dedication to progress with.
 - Be automated.
     - Use various tools to streamline development, deployment and resource management.
 - Be reproducible.
@@ -27,7 +29,7 @@ Each 'problem space' should fulfill the following requirements:
         - Explain problems, solutions and experiences
     - and well written.
 - Be "cloud agnostic"
-    - Where possible.
+    - Where possible, deploy and communicate across cloud providers.
 
 ## Problem Directories
 
