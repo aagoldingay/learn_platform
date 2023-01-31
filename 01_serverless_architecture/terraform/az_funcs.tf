@@ -47,7 +47,7 @@ resource "azurerm_linux_function_app" "sender" {
   }
 
   app_settings = {
-    "RECEIVERADDR" = "https://${azurerm_linux_function_app.receiver[0].default_hostname}/api/receiver?code=${data.azurerm_function_app_host_keys.receiver[0].default_function_key}"
+    "RECEIVERADDR" = var.az_receive ? "https://${azurerm_linux_function_app.receiver[0].default_hostname}/api/receiver?code=${data.azurerm_function_app_host_keys.receiver[0].default_function_key}" : google_cloudfunctions_function.receiver[0].https_trigger_url
   }
 }
 
