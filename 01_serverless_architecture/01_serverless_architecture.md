@@ -54,3 +54,21 @@ For more specific documentation on this stage, visit the [dedicated page]()
 ### Automation
 
 For more specific documentation on this stage, visit the [dedicated page]()
+
+## Outcomes
+
+### Azure to Azure
+
+The initial proof of concept, demonstrating what I already understood about the cloud, involved deploying both the Sender and Receiver to Azure, and having them successfully interact.
+
+I was able to send a request to Sender via Postman, with a HTTP 200 response.
+
+<img src="images/az_to_az_sender_postman.png">
+
+Next, I had to prove that the interaction happened. As I had deployed the bare minimum resources required, there was no Application Insights to easily surface the logging I was after. Instead, I downloaded relevant log files from this location:
+
+Azure Portal > Receiver or Sender Function App > Advanced Tools > "Go" > Debug Console banner (CMD) > `LogFiles/Application/Functions/Function/{receiver/sender}/*.log`
+
+<img src="images/az_to_az_logs.png">
+
+The screenshot shows the renamed log files from Sender and Receiver, demonstrating with timestamps, that Sender triggered first. It then sent a request to Receiver, waited for a successful response, then logged the receiver's success, and completed.

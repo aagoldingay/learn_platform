@@ -2,28 +2,28 @@ param (
     [string]
     $tenant_id = "",
 
-    [bool]
+    [switch]
     $deploy_azure = $true,
 
-    [bool]
+    [switch]
     $deploy_gcp = $false,
 
-    [bool]
+    [switch]
     $az_receiver = $false,
 
-    [bool]
+    [switch]
     $skip_build = $false,
 
-    [bool]
+    [switch]
     $skip_test = $false,
 
-    [bool]
+    [switch]
     $skip_infra = $false,
 
-    [bool]
+    [switch]
     $tf_apply_only = $false,
 
-    [bool]
+    [switch]
     $skip_code_deploy = $false
 )
 
@@ -63,22 +63,6 @@ if (!$skip_test) {
 }
 
 if (!$skip_code_deploy) {
-    if ($deploy_azure -and !$deploy_gcp) {
-        Write-Host "# PUBLISHING serverless_app ..."
-        
-        $az_receiver_publish_output = $(dotnet publish ../serverless_app/azure_host_receiver -c Release -o ./az_serverless_receiver)
-
-        Evaluate_Output -id "PUBLISH" -log ($az_receiver_publish_output -join "; ")
-        
-        Compress-Archive -LiteralPath az_serverless_receiver -DestinationPath az_serverless_receiver.zip -Force
-
-        $az_sender_publish_output = $(dotnet publish ../serverless_app/azure_host_sender -c Release -o ./az_serverless_sender)
-
-        Evaluate_Output -id "PUBLISH" -log ($az_sender_publish_output -join "; ")
-        
-        Compress-Archive -LiteralPath az_serverless_sender -DestinationPath az_serverless_sender.zip -Force
-    }
-
     # if ($deploy_gcp -and !$deploy_azure) {
     #     Write-Host "# PUBLISHING serverless_app/gcp_host ..."
         
@@ -147,11 +131,13 @@ if (!$skip_infra) {
 
 if (!$skip_code_deploy) {
     if ($deploy_azure -and !$deploy_gcp) {
-        $receiver_deploy_output = az functionapp deployment source config-zip -g 01_serverless -n 01-serverless-receiver --src az_serverless_receiver.zip
+        cd ../serverless_app/azure_host_receiver
+        $receiver_deploy_output = func azure functionapp publish 01-serverless-receiver
 
         Evaluate_Output -id "RECEIVER DEPLOY" -log ($receiver_deploy_output -join "; ")
     
-        $sender_deploy_output = az functionapp deployment source config-zip -g 01_serverless -n 01-serverless-sender --src az_serverless_sender.zip
+        cd ../azure_host_sender
+        $sender_deploy_output = func azure functionapp publish 01-serverless-sender
 
         Evaluate_Output -id "SENDER DEPLOY" -log ($sender_deploy_output -join "; ")
     }
