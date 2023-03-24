@@ -47,20 +47,21 @@ Prerequisites:
     npm install -g azure-functions-core-tools@4 --unsafe-perm true
 
     # Azure Function App
-    func init azure_host 
+    func init azure_host_receiver
+    func init azure_host_sender
     # dotnet worker runtime
-    cd azure_host
-    func init --template "Http Trigger" --name "sender"
-    func init --template "Http Trigger" --name "receiver"
     ```
     [GCP Cloud Functions]()
     ```
-    dotnet new gcf-http -o gcp_host
+    dotnet new gcf-http -o gcp_host_receiver
+    dotnet new gcf-http -o gcp_host_sender
     ```
 1. Add cloud provider projects to the solution
     ```
-    dotnet sln add azure_host/azure_host.csproj
-    dotnet sln add gcp_host/gcp_host.csproj
+    dotnet sln add azure_host_receiver/azure_host_receiver.csproj
+    dotnet sln add azure_host_sender/azure_host_sender.csproj
+    dotnet sln add gcp_host_receiver/gcp_host_receiver.csproj
+    dotnet sln add gcp_host_sender/gcp_host_sender.csproj
     ```
 1. Reference the right projects to where they are needed
     ```
@@ -68,8 +69,10 @@ Prerequisites:
     dotnet add receiver/receiver.csproj reference data/data.csproj
 
     # CLOUD PROVIDERS
-    dotnet add azure_host/azure_host.csproj reference sender/sender.csproj receiver/receiver.csproj data/data.csproj
-    dotnet add gcp_host/gcp_host.csproj reference sender/sender.csproj receiver/receiver.csproj data/data.csproj
+    dotnet add azure_host_receiver/azure_host_receiver.csproj reference receiver/receiver.csproj data/data.csproj
+    dotnet add azure_host_sender/azure_host_sender.csproj reference sender/sender.csproj data/data.csproj
+    dotnet add gcp_host_receiver/gcp_host_receiver.csproj reference receiver/receiver.csproj data/data.csproj
+    dotnet add gcp_host_sender/gcp_host_sender.csproj reference sender/sender.csproj data/data.csproj
     ```
 1. Reference projects to test projects as required
     ```
@@ -95,7 +98,16 @@ Prerequisites:
 
 ### Testing Azure Functions in VSCode
 
-Azure Functions are quite nice to work with. Locally, they interface with Azurite (or the deprecated Microsoft Azure Storage Emulator) to successfully run multiple functions with the required underlying storage. You get a real-world experience right on your machine! Just click F5 while on an Azure Function C# file, and boom!
+Azure Functions are quite nice to work with. Locally, they interface with Azurite (or the deprecated Microsoft Azure Storage Emulator) to successfully run multiple functions with the required underlying storage. You get a real-world experience right on your machine! 
+
+```
+# cmd prompt 1
+cd azure_host_receiver
+func start # port 7071
+
+# cmd prompt 2
+cd azure_host_sender
+func start -p 7171 # port 7171
 
 `local.settings.json` acts as an Azure Function App's configuration, which you would normally locate via Azure Portal > `function_app_name` > Configuration. All Environment Variables are found here, and are treated as a key value pair in JSON.
 

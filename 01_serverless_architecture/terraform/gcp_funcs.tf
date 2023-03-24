@@ -10,7 +10,7 @@ resource "google_cloudfunctions_function" "sender" {
   entry_point         = "sender"
 
   environment_variables = {
-    "RECEIVERADDR" = var.gcp_receive ? google_cloudfunctions_function.receiver[0].https_trigger_url : "https://${azurerm_linux_function_app.receiver[0].default_hostname}/api/receiver?code=${data.azurerm_function_app_host_keys.receiver[0].default_function_key}"
+    "RECEIVERADDR" = var.gcp_receive ? google_cloudfunctions_function.receiver[0].https_trigger_url : "https://${azurerm_windows_function_app.receiver[0].default_hostname}/api/receiver?code=${data.azurerm_function_app_host_keys.receiver[0].default_function_key}"
   }
 
   labels = {

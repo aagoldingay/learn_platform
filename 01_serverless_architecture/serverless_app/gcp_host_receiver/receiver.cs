@@ -1,4 +1,5 @@
 using Google.Cloud.Functions.Framework;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -19,7 +20,9 @@ namespace gcp_host
             var receiver = new Receiver();
             var num = receiver.CheckAsap(receiver.ReadData(requestBody));
 
-            await context.Response.WriteAsync($"{num} ASAP orders to process");
+            Console.WriteLine($"{num} ASAP orders to process");
+
+            await context.Response.WriteAsync(new OkResult().ToString());
         }
     }
 }

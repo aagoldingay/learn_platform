@@ -9,7 +9,7 @@
 
 ### Remote State
 
-Terraform best practice is to use a remote state. For such a small project scope, and being intended only for testing, a local Terraform state file would be easier - however I want to include some production-platform ideals!
+Terraform best practice is to use a remote state. For such a small project scope, and being intended only for testing, a local Terraform state file would be easier.
 
 My configuration uses Azure Blob Storage as the location to save Terraform state. As long as the state Blob Storage is not maintained within the same Terraform configuration being deployed, no amount of Terraform plan / apply or other Terraform-originating changes will corrupt or invalidate the state file. The last thing I want is to make a change, and accidentally destroy our Terraform state but not our resources...
 
@@ -32,7 +32,7 @@ When I am ready to venture into the world of GCP, I can simply create those reso
 ### Deploying Terraform
 
 Terraform Init (configure backend - avoid pushing secrets to git)
-<!-- Terraform Validate - validate configuration. great for CI, but not foolproof -->
+Terraform Validate - validate configuration. great for CI, but not foolproof
 Terraform Plan - the dry run, good to check out the resulting plan
 Terraform Apply - make infrastructure changes. performs a dry run with prompt to continue. not useful for CI, until setting --auto-approve
 
@@ -47,3 +47,10 @@ For the purpose of this problem space, cost is a major factor, so Consumption pl
 ## Google Cloud Infrastructure
 
 Now this is a learning experience. I have to figure out how to set up a workspace to deploy my infrastructure to, and identify the correct configurations to be cost effective and fit-for-purpose.
+
+Regardless of deploying Azure only, setting up Terraform requires the following commands:
+
+```
+gcloud init
+gcloud auth application-default login
+```

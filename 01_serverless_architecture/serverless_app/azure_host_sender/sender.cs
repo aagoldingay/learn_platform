@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using sender;
 using data;
 
-namespace azure_host
+namespace azure_host_sender
 {
     public static class sender
     {
@@ -30,7 +30,7 @@ namespace azure_host
             var result = await client.PostAsync(url, new StringContent(payload));
 
             if (result.IsSuccessStatusCode)
-                log.LogInformation("receiver responded successfully");
+                log.LogInformation("SENDER_SUCCESS : receiver got your message");
             
             return new OkResult();
         }

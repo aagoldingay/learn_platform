@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using receiver;
 
-namespace azure_host
+namespace azure_host_receiver
 {
     public static class receiver
     {

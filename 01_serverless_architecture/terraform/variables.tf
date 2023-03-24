@@ -1,41 +1,44 @@
 variable "az_send" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "az_receive" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "deploy_az" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "gcp_send" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "gcp_receive" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "deploy_gcp" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "google_provider_project" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "google_provider_region" {
-  type = string
+  type    = string
+  default = ""
 }
 
-variable "google_provider_zone" {
-  type = string
-}
+# variable "google_provider_zone" {
+#   type    = string
+#   default = ""
+# }
