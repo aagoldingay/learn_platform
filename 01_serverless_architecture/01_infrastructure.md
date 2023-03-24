@@ -11,7 +11,19 @@
 
 Terraform best practice is to use a remote state. For such a small project scope, and being intended only for testing, a local Terraform state file would be easier.
 
-My configuration uses Azure Blob Storage as the location to save Terraform state. As long as the state Blob Storage is not maintained within the same Terraform configuration being deployed, no amount of Terraform plan / apply or other Terraform-originating changes will corrupt or invalidate the state file. The last thing I want is to make a change, and accidentally destroy our Terraform state but not our resources...
+My configuration should use Azure Blob Storage as the location to save Terraform state. As long as the state Blob Storage is not maintained within the same Terraform configuration being deployed, no amount of Terraform plan / apply or other Terraform-originating changes will corrupt or invalidate the state file. The last thing I want is to accidentally destroy our Terraform state but not our resources...
+
+### Sensitive Information
+
+Functions will have domain names, and someone on a different continent may wish to test this project. To account for that, I need to ensure that there can be some uniqueness in naming conventions. As a result, one file must be populated and named correctly...
+
+GCP also requires the unique ID of the project which will contain the resources. This value is likely not something that should be exposed in a public repository.
+
+Values in `terraform/vars/secrets.tfvars.example` should be populated correctly, then renamed to `secrets.tfvars`. This file can then be referenced in terraform commands to populate the outstanding values: 
+
+```
+terraform plan -var-file="vars/secrets.tfvars" -var-file="vars/az_only.tfvars"
+```
 
 ### Proving the Design
 

@@ -6,7 +6,7 @@ resource "azurerm_resource_group" "rsg" {
 
 resource "azurerm_storage_account" "storage" {
   count                    = var.deploy_az ? 1 : 0
-  name                     = "01serverlessstorage"
+  name                     = "${var.project_name}serverlessstorage"
   resource_group_name      = azurerm_resource_group.rsg[0].name
   location                 = azurerm_resource_group.rsg[0].location
   account_tier             = "Standard"
@@ -15,7 +15,7 @@ resource "azurerm_storage_account" "storage" {
 
 resource "azurerm_service_plan" "serverless_plan" {
   count               = var.deploy_az ? 1 : 0
-  name                = "01serverlessplan"
+  name                = "${var.project_name}serverlessplan"
   location            = azurerm_resource_group.rsg[0].location
   resource_group_name = azurerm_resource_group.rsg[0].name
   # kind                = "FunctionApp"
@@ -26,7 +26,7 @@ resource "azurerm_service_plan" "serverless_plan" {
 
 resource "azurerm_windows_function_app" "sender" {
   count                      = var.deploy_az && var.az_send ? 1 : 0
-  name                       = "01-serverless-sender"
+  name                       = "${var.project_name}-sender"
   location                   = azurerm_resource_group.rsg[0].location
   resource_group_name        = azurerm_resource_group.rsg[0].name
   service_plan_id            = azurerm_service_plan.serverless_plan[0].id
@@ -51,7 +51,7 @@ resource "azurerm_windows_function_app" "sender" {
 
 resource "azurerm_windows_function_app" "receiver" {
   count                      = var.deploy_az && var.az_receive ? 1 : 0
-  name                       = "01-serverless-receiver"
+  name                       = "${var.project_name}-receiver"
   location                   = azurerm_resource_group.rsg[0].location
   resource_group_name        = azurerm_resource_group.rsg[0].name
   service_plan_id            = azurerm_service_plan.serverless_plan[0].id

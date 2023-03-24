@@ -28,6 +28,10 @@ variable "deploy_gcp" {
   default = false
 }
 
+variable "project_name" {
+  type = bool
+}
+
 variable "google_provider_project" {
   type    = string
   default = ""
