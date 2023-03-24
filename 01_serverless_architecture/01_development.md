@@ -126,7 +126,7 @@ func start -p 7171 # port 7171
     }
     ```
 
-- 01_serverless_architecture_serverless_app/azure_host/local.settings.json
+- 01_serverless_architecture_serverless_app/azure_host_sender/local.settings.json
     ```json
     {
         "IsEncrypted": false,
