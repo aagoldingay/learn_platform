@@ -28,7 +28,7 @@ Write-Host "# RUNNING TESTS IN serverless_app ..."
 $test_output = $(dotnet test ../serverless_app)
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Warning -Message ($build_output -join "; ")
+    Write-Warning -Message ($test_output -join "; ")
     throw "# # TESTS FAILED"
 } else {
     Write-Host "# # TESTS SUCCESSFUL"
@@ -40,7 +40,7 @@ if ($deploy_azure -and !$deploy_gcp) {
     $az_receiver_publish_output = $(dotnet publish ../serverless_app/azure_host_receiver -c Release -o ./az_serverless_receiver)
     
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning -Message ($build_output -join "; ")
+        Write-Warning -Message ($az_receiver_publish_output -join "; ")
         throw "# # PUBLISH FAILED"
     } else {
         Write-Host "# # PUBLISH SUCCESSFUL"
@@ -51,7 +51,7 @@ if ($deploy_azure -and !$deploy_gcp) {
     $az_sender_publish_output = $(dotnet publish ../serverless_app/azure_host_sender -c Release -o ./az_serverless_sender)
 
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning -Message ($build_output -join "; ")
+        Write-Warning -Message ($az_sender_publish_output -join "; ")
         throw "# # PUBLISH FAILED"
     } else {
         Write-Host "# # PUBLISH SUCCESSFUL"
