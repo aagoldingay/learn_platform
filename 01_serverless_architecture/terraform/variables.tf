@@ -29,7 +29,7 @@ variable "deploy_gcp" {
 }
 
 variable "project_name" {
-  type = bool
+  type = string
 }
 
 variable "google_provider_project" {

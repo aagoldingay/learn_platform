@@ -56,6 +56,10 @@ As the services making use of Serverless Architecture are designed to be cost ef
 
 For the purpose of this problem space, cost is a major factor, so Consumption plan is the way to go, and the function can only run when called, so costs will always be low. Function Apps also require an underlying storage account (effectively a hard drive) to manage function state. This is used by some triggers to track work that has been done. For example, triggering on a new file being uploaded to a Blob Storage Account will produce a receipt, to prevent the function from attempting to read the file again.
 
+### Retrieving Receiver's Function Key
+
+I have noticed that (on 24/03/2023) Function App keys can take a while to appear on Azure Portal. The first successful, complete deployment spent ~5 minutes waiting for a successful response from Azure Resource Manager to populate the Terraform `azurerm_function_app_host_keys` resource. Subsequent creations then failed to retrieve a key, and the key did not appear in Azure after an hour, leaving Terraform state in a bad state.
+
 ## Google Cloud Infrastructure
 
 Now this is a learning experience. I have to figure out how to set up a workspace to deploy my infrastructure to, and identify the correct configurations to be cost effective and fit-for-purpose.

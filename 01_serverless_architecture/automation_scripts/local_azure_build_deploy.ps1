@@ -51,12 +51,14 @@ function Evaluate_Output {
 
 if ($destroy) {
 
-    Write-Host "# DESTROYING INFRASTRUCTURE ..."
     $az_login_output = az login -t $tenant_id
-
+    
     Evaluate_Output -id "AZURE LOGIN" -log ($az_login_output -join "; ")
-
+    
     cd ../terraform
+
+    Write-Host "# DESTROYING INFRASTRUCTURE ..."
+    
     if ($deploy_azure -and !$deploy_gcp) {
         $var_file = "az_only.tfvars"
         
@@ -81,7 +83,7 @@ if ($destroy) {
         #     }
     }
 
-    $tf_output = terraform destroy -var-file=secrets.tfvars -var-file=$var_file -auto-approve
+    $tf_output = terraform destroy -var-file="vars/secrets.tfvars" -var-file="vars/$var_file" -auto-approve
     
     Evaluate_Output -id "TERRAFORM DESTROY" -log ($tf_output -join "; ")
 
@@ -160,12 +162,14 @@ if ($destroy) {
         }
 
         if (!$tf_apply_only) {
-            $tf_output = terraform plan -var-file=secrets.tfvars -var-file=$var_file
+            $tf_output = terraform plan -var-file="vars/secrets.tfvars" -var-file="vars/$var_file"
 
             Evaluate_Output -id "TERRAFORM PLAN" -log ($tf_output -join "; ")
         }
 
-        $tf_output = terraform apply -var-file=secrets.tfvars -var-file=$var_file -auto-approve
+        Write-Host "# # APPLYING CONFIGURATION ..."
+
+        $tf_output = terraform apply -var-file="vars/secrets.tfvars" -var-file="vars/$var_file" -auto-approve
 
         Evaluate_Output -id "TERRAFORM APPLY" -log ($tf_output -join "; ")
     }

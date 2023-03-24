@@ -6,7 +6,7 @@ resource "azurerm_resource_group" "rsg" {
 
 resource "azurerm_storage_account" "storage" {
   count                    = var.deploy_az ? 1 : 0
-  name                     = "${var.project_name}serverlessstorage"
+  name                     = "${var.project_name}fncstor"
   resource_group_name      = azurerm_resource_group.rsg[0].name
   location                 = azurerm_resource_group.rsg[0].location
   account_tier             = "Standard"
@@ -15,7 +15,7 @@ resource "azurerm_storage_account" "storage" {
 
 resource "azurerm_service_plan" "serverless_plan" {
   count               = var.deploy_az ? 1 : 0
-  name                = "${var.project_name}serverlessplan"
+  name                = "${var.project_name}plan"
   location            = azurerm_resource_group.rsg[0].location
   resource_group_name = azurerm_resource_group.rsg[0].name
   # kind                = "FunctionApp"
