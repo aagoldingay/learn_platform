@@ -49,11 +49,11 @@ For more specific documentation on this stage, visit the [dedicated page](01_dev
 
 Terraform will be particularly applicable for deploying infrastructure quickly, between multiple cloud providers. Luckily, this bit (at least in Azure) is my day job! So this should be the least embarrassing part of the first problem space!
 
-For more specific documentation on this stage, visit the [dedicated page]()
+For more specific documentation on this stage, visit the [dedicated page](01_infrastructure.md)
 
 ### Automation
 
-For more specific documentation on this stage, visit the [dedicated page]()
+For more specific documentation on this stage, visit the [dedicated page](01_automation.md)
 
 ## Outcomes
 

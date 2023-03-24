@@ -108,25 +108,11 @@ func start # port 7071
 # cmd prompt 2
 cd azure_host_sender
 func start -p 7171 # port 7171
+```
 
 `local.settings.json` acts as an Azure Function App's configuration, which you would normally locate via Azure Portal > `function_app_name` > Configuration. All Environment Variables are found here, and are treated as a key value pair in JSON.
 
-- learn_platform/.vscode/launch.json
-    ```json
-    {
-        "version": "0.2.0",
-        "configurations": [
-            {
-                "name": "Attach to .NET Functions",
-                "type": "coreclr",
-                "request": "attach",
-                "processId": "${command:azureFunctions.pickProcess}"
-            }
-        ]
-    }
-    ```
-
-- 01_serverless_architecture_serverless_app/azure_host_sender/local.settings.json
+- 01_serverless_architecture/serverless_app/azure_host_sender/local.settings.json
     ```json
     {
         "IsEncrypted": false,
@@ -144,9 +130,14 @@ Cloud provider projects make use of environment variables to reference another c
 
 ## Developing Google Cloud Functions
 
+This section is still largely untested, although I have been able to verify that both GCP Functions start.
+
+So far, I have had no success configuring local environment variables. I believe it requires and `appsettings.json` file, but no documentation I could find to date had shown me how to do this accurately.
+
 ### Tools
 
 ### Testing
 ```
-dotnet run --project gcp_host/gcp_host.csproj --port 8080 --target gcp_host.sender
-dotnet run --project gcp_host/gcp_host.csproj --port 8081 --target gcp_host.receiver
+dotnet run --project gcp_host_sender/gcp_host_sender.csproj --port 8080
+dotnet run --project gcp_host_receiver/gcp_host_receiver.csproj --port 8081
+```
