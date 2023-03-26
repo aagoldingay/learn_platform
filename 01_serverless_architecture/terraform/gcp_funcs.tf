@@ -1,6 +1,6 @@
 resource "google_storage_bucket" "function_store" {
-  count = var.deploy_gcp ? 1 : 0
-  name = "${var.project_name}-deploy-store"
+  count    = var.deploy_gcp ? 1 : 0
+  name     = "${var.project_name}-deploy-store"
   location = "EU"
 }
 
@@ -8,8 +8,8 @@ resource "google_storage_bucket" "function_store" {
 # dotnet publish ../serverless_app/gcp_host_receiver -o gcp_host_receiver
 # Compress-Archive -LiteralPath gcp_host_receiver -DestinationPath gcp_host_receiver.zip
 resource "google_storage_bucket_object" "receiver" {
-  count = var.deploy_gcp && var.gcp_receive ? 1 : 0
-  name = "gcp_host_receiver.zip"
+  count  = var.deploy_gcp && var.gcp_receive ? 1 : 0
+  name   = "gcp_host_receiver.zip"
   bucket = google_storage_bucket.function_store[0].name
   source = "../automation_scripts/gcp_host_receiver.zip"
 }
@@ -18,8 +18,8 @@ resource "google_storage_bucket_object" "receiver" {
 # dotnet publish ../serverless_app/gcp_host_sender -o gcp_host_sender
 # Compress-Archive -LiteralPath gcp_host_sender -DestinationPath gcp_host_sender.zip
 resource "google_storage_bucket_object" "sender" {
-  count = var.deploy_gcp && var.gcp_send ? 1 : 0
-  name = "gcp_host_sender.zip"
+  count  = var.deploy_gcp && var.gcp_send ? 1 : 0
+  name   = "gcp_host_sender.zip"
   bucket = google_storage_bucket.function_store[0].name
   source = "../automation_scripts/gcp_host_sender.zip"
 }
@@ -33,13 +33,18 @@ resource "google_cloudfunctions_function" "sender" {
   source_archive_bucket = google_storage_bucket.function_store[0].name
   source_archive_object = google_storage_bucket_object.sender[0].name
 
-  trigger_http        = true
-  available_memory_mb = 128
-  timeout             = 30
-  entry_point         = "gcp_host_sender.sender"
+  trigger_http                 = true
+  available_memory_mb          = 128
+  timeout                      = 30
+  entry_point                  = "gcp_host_sender.sender"
+  https_trigger_security_level = "SECURE_ALWAYS"
 
   environment_variables = {
     "RECEIVERADDR" = var.gcp_receive ? google_cloudfunctions_function.receiver[0].https_trigger_url : "https://${azurerm_windows_function_app.receiver[0].default_hostname}/api/receiver?code=${data.azurerm_function_app_host_keys.receiver[0].default_function_key}"
+  }
+
+  build_environment_variables = {
+    "GOOGLE_BUILDABLE" = "serverless_app/gcp_host_sender/gcp_host_sender.csproj"
   }
 
   labels = {
@@ -69,10 +74,15 @@ resource "google_cloudfunctions_function" "receiver" {
   source_archive_bucket = google_storage_bucket.function_store[0].name
   source_archive_object = google_storage_bucket_object.receiver[0].name
 
-  trigger_http        = true
-  available_memory_mb = 128
-  timeout             = 30
-  entry_point         = "gcp_host_receiver.receiver"
+  trigger_http                 = true
+  available_memory_mb          = 128
+  timeout                      = 30
+  entry_point                  = "gcp_host_receiver.receiver"
+  https_trigger_security_level = "SECURE_ALWAYS"
+
+  build_environment_variables = {
+    "GOOGLE_BUILDABLE" = "serverless_app/gcp_host_receiver/gcp_host_receiver.csproj"
+  }
 
   labels = {
     problem-space = "01"

@@ -106,20 +106,11 @@ if ($destroy) {
     }
 
     if (!$skip_code_deploy) {
-        # if ($deploy_gcp -and !$deploy_azure) {
-        #     Write-Host "# PUBLISHING serverless_app/gcp_host ..."
-
-        # dotnet publish ../serverless_app/gcp_host_receiver -o gcp_host_receiver
-        # Compress-Archive -LiteralPath gcp_host_receiver -DestinationPath gcp_host_receiver.zip
-
-        # dotnet publish ../serverless_app/gcp_host_sender -o gcp_host_sender
-        # Compress-Archive -LiteralPath gcp_host_sender -DestinationPath gcp_host_sender.zip -Force
-            
-        #     $publish_output = $(dotnet publish ../serverless_app/gcp_host --os linux -o ./serverless_app)
-            
+        # Write-Host "# ARCHIVING C# PROJECT FOR GCP DEPLOY"
+        
+        #     Compress-Archive -LiteralPath serverless_app -DestinationPath gcp_host_receiver.zip -Force
+        #     Compress-Archive -LiteralPath serverless_app -DestinationPath gcp_host_sender.zip -Force
         #     Evaluate_Output
-            
-        #     Compress-Archive -LiteralPath serverless_app -DestinationPath gcp_serverless_app.zip -Force
         # }
     }
 
@@ -192,6 +183,7 @@ if ($destroy) {
 
             Evaluate_Output -id "SENDER DEPLOY" -log ($sender_deploy_output -join "; ")
         }
+        # GCP configurations
     }
 
 }
