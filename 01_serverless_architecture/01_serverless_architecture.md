@@ -32,8 +32,27 @@ The scalability and affordability of Serverless computing comes at the detriment
 
 ## Solution Design
 
---diagraaam
-Sender -> Receiver (C# Net Core 6.0)
+<img src="images/diagram_sender_receiver.png">
+
+The design is very simple. A 'sender' function will do the heavy lifting for the user, who will interact using a simple HTTP GET request with no payload.
+
+The sender will populate an array of simple item orders, including a note. Then it will make a POST request to the 'receiver', sending the item orders as an array in the HTTP request body. 
+
+The receiver, for simplicities sake, should do no more than a basic check against the payload to confirm that the request was formed correctly. An easy option would be to confirm the count of any orders with the note "Deliver ASAP". Doing so confirms that the randomised payload produced by the sender can be traversed and that there is data. It is not necessarily important for this data to guarantee the presence of an ASAP order.
+
+Looking into the infrastructure we will require, this design changes, somewhat, adding complexity.
+
+### Azure
+
+Function Apps are one of Azure's serverless offerings and they are easy to work with, although they have a quirk that I find quite strange. In order to deploy them, an App Service Plan and Storage Account are required. There is a one-to-one relationship between the Plan and Storage Account and, fortunately, multiple Function Apps can be deployed to one App Service Plan.
+
+<img src="images/diagram_azure_to_azure.png">
+
+### GCP
+
+The infrastructure required for a GCP deployment does not differ too much when comparing the Functions, however the storage resource required was only to house artifacts (zip files) that will be built and executed within each Cloud Function.
+
+<img src="images/diagram_gcp_to_gcp.png">
 
 ## Requirements
 
@@ -48,7 +67,7 @@ Sender -> Receiver (C# Net Core 6.0)
 
 Azure is the cloud platform which I have the most experience with, and will serve as a baseline to prove to myself that I can develop, deploy and run Serverless Architecture. Azure supports a subset of languages, compared to other cloud providers. To keep this spike simple, the selected programming language and automation tools will be chosen if they are supported by multiple cloud platform's serverless offerings. 
 
-Unfortunately for me, I do not actively write code in languages supported by Azure... But it's gotta be done! I have some pripr experience writing C# code in a Production environment, and it is a common language used for serverless resources across multiple cloud providers. I have chosen to use dotnet 6.0, for its Long-Term Support and cross-platform capability.
+Unfortunately for me, I do not actively write code in languages supported by Azure... But it's gotta be done! I have some prior experience writing C# code in a Production environment, and it is a common language used for serverless resources across multiple cloud providers. I have chosen to use dotnet 6.0, for its Long-Term Support and cross-platform capability.
 
 Requirements:
 * C# dotnet 6.0
@@ -122,8 +141,6 @@ TL;DR: This project contains various C# projects, starting with the top level Az
     dotnet add package PACKAGE_NAME
     ...
     ```
-
-For more specific documentation on this stage, visit the [dedicated page](01_development.md)
 
 ### Build and Unit Test
 
@@ -208,7 +225,7 @@ A HTTP POST request to `http://localhost:8080` with the following body will prod
 
 ## Infrastructure
 
-Terraform will be particularly applicable for deploying infrastructure quickly, between multiple cloud providers. Luckily, this bit (at least in Azure) is my day job! So this should be the least embarrassing part of the first problem space!
+Terraform will be particularly applicable for deploying infrastructure quickly, between multiple cloud providers. Luckily, this bit (at least in Azure) is my day job, so this should be the least embarrassing part of thi first problem space!
 
 ### Terraform Remote State
 
@@ -252,13 +269,13 @@ For the purpose of this problem space, cost is a major factor, so Consumption pl
 
 I was faced with a new issue when attempting to deploy to Azure Functions for the first time in this project. I realised I had either been a Developer sending code into mystical pipelines, seeing the results later on, or the Platform Engineer, reworking or replicating other pipelines to deploy new infrastructure. My history with Azure DevOps extensions had me unprepared for deploying packaged code, made from scratch, to an accessible environment.
 
-I had initially tried to used `dotnet publish`, PowerShell's `Compress-Archive` and finally `az functionapp deployment source config-zip` to produce the `.zip` I required for Run-From-Package, and deploy it. This lead to a day's worth of problem solving to identify why the Function App was not listing any functions while the underlying file system appeared to have them.
+I had initially tried to use `dotnet publish`, PowerShell's `Compress-Archive` and finally `az functionapp deployment source config-zip` to produce the `.zip` I required for Run-From-Package, and deploy it. This lead to a day's worth of problem solving to identify why the Function App was not listing any functions while the underlying file system appeared to have them.
 
 Eventually, I had success with an alternative to the above 3 commands, which I had already used previously to set up the initial C# projects - `func azure functionapp publish`!
 
 ### Google Cloud Infrastructure
 
-Everything related to GCP is a learning experience for myself. I have to figure out how to set up a workspace to deploy my infrastructure to, and identify the correct configurations to be cost effective and fit-for-purpose.
+Everything related to GCP is a learning experience for myself. I had to figure out how to set up a workspace to deploy my infrastructure to, and identify the correct configurations to be cost effective and fit-for-purpose.
 
 Regardless of deploying Azure only or not, setting up Terraform requires the following commands due to the GCP provider being included. This would be a blocker for someone else attempting to deploying the Terraform in this project:
 
@@ -288,9 +305,9 @@ gcloud functions deploy <FUNCTION_NAME> \
     --trigger-http
 ```
 
-There was one catch, however. An attempt to test the function directly in GCP's web interface threw an unhandled exception, which I assume relates back to the errors I received attempting to deploy from the source directly earlier, where receiver or data csproj files could not be found. More investigation and testing is required to understand what is going wrong during deployment preparations. Viewing and downloading the source zip from the Cloud Function shows that the data and receiver `.dll`'s are present in `/bin`. 
+There was one catch, however. An attempt to test the function directly in GCP's web interface threw an unhandled exception, which I assumed was related back to the errors I received during deployment from the source directory. More investigation and testing was required to understand what was going wrong during deployment preparations. Viewing and downloading the source zip from the Cloud Function showed that the data and receiver `.dll`'s were present in `/bin`. 
 
-I have not identified many good examples of C# deployments which feature multiple packaged dependencies, developed locally. This prevents me from understanding how Cloud Functions prepares Functions with dependencies, which would allow me to adjust my development method accordingly.
+I was also unable to identify many good examples of C# deployments which featured multiple packaged dependencies, developed locally. This prevents me from understanding how Cloud Functions prepares Functions with dependencies, which would allow me to adjust my development method accordingly.
 
 ```
 System.IO.FileNotFoundException: Could not load file or assembly 'receiver, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.
@@ -315,7 +332,7 @@ gcloud functions deploy fnc-receiver --region europe-west2 --source=. --entry-po
 
 A subsequent attempt to use `dotnet publish` across the whole C# project, zipped and deployed with Terraform produced the same errors as previously. 
 
-I then decided to try zipping the c# project, this time skipping the call to `dotnet publish`. Combined with the earlier success of setting `GOOGLE_BUILDABLE`, the following Terraform apply was successful!
+I then decided to try zipping the C# project, this time skipping the call to `dotnet publish`. Combined with the earlier success of setting `GOOGLE_BUILDABLE`, the following Terraform apply was successful!
 
 
 ## Automation
@@ -328,11 +345,11 @@ More work is still required on this to integrate GCP.
 
 Whether writing a script to speed up development locally, or using a CI/CD platform, there are some consistent steps to be taken:
 
-0. Build
-0. Test
-0. Package
-0. Deploy Infrastructure
-0. Deploy Code
+1. Build
+1. Test
+1. Package
+1. Deploy Infrastructure
+1. Deploy Code
 
 Any failures in one step should prevent the script from actioning something later. For example, a failing build will not permit testing to run. Without successful tests, there would be no benefit from deploying code.
 
@@ -340,7 +357,7 @@ Any failures in one step should prevent the script from actioning something late
 
 ### Azure - Retrieving Receiver's Function Key
 
-I had noticed that (on 24/03/2023) Function App keys can take a while to appear on Azure Portal. The first successful, complete deployment spent ~5 minutes waiting for a successful response from Azure Resource Manager to populate the Terraform `azurerm_function_app_host_keys` resource. Subsequent creations then failed to retrieve a key, and the key did not appear in Azure after an hour, leaving Terraform state in a bad state.
+I had noticed that (on 24/03/2023) Function App keys can take a while to appear on Azure Portal. The first successful, complete deployment spent ~5 minutes waiting for a successful response from Azure Resource Manager to populate the Terraform `azurerm_function_app_host_keys` resource. Subsequent creations then failed to retrieve a key, and the key did not appear in Azure after an hour, leaving Terraform state file in an unrecoverable way, leading to manual cleanup.
 
 ### Azure to Azure
 
@@ -360,7 +377,7 @@ The screenshot shows the renamed log files from Sender and Receiver, demonstrati
 
 ### GCP to GCP
 
-As I managed to have several breakthroughs in Cloud Function deployments, I had amended the Terraform configuration accordingly. Due to the sender function's dependency on the receiver being created first, I was able to test the receiver was operation via a full C# project zip before the Terraform apply had completed. Following the apply's successful completion, I triggered the sender function with a GET request directly in the Testing tab in GCP's web interface. The resulting screenshots, similar to that of Azure to Azure, proved that the sender function triggered the receiver, and both had completed successfully.
+After having several breakthroughs in Cloud Function deployments, I had amended the Terraform configuration accordingly. Due to the sender function's dependency on the receiver being created first, I was able to test the receiver was operation via a full C# project zip before the Terraform apply had completed. Following the apply's successful completion, I triggered the sender function with a GET request directly in the Testing tab in GCP's web interface. The resulting screenshots, similar to that of Azure to Azure, proved that the sender function triggered the receiver, and both had completed successfully.
 
 <img src="images/gcp_to_gcp_sender_logs.png">
 
