@@ -1,3 +1,4 @@
-google_provider_project =  ""
-google_provider_region = ""
-google_provider_zone = ""
+deploy_gcp = true
+deploy_az  = true
+gcp_send   = true
+az_receive = true

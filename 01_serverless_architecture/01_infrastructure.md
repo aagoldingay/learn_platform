@@ -70,3 +70,37 @@ Regardless of deploying Azure only, setting up Terraform requires the following 
 gcloud init
 gcloud auth application-default login
 ```
+
+### Receiver Function Deployment with Terraform
+
+I experienced issues deploying the first function to GCP with Terraform. I specified a GCP Bucket to contain zip files produced with `dotnet publish`. I had a hunch that my mileage with the publish command wouldn't get me far, as I already failed to use it for Microsoft Azure. The error, `Error waiting for Creating CloudFunctions Function: Error code 3, message: Function failed on loading user code. This is likely due to a bug in the user code.`, suggested the code (or published result) was not correct.
+
+I attempted variations of the alternative, `gcloud functions deploy` by setting the `--entry-point` to various settings believing that was the issue. Running it in the source code directory, `/severless_app/gcp_host_receiver`, showed various errors about the receiver and data `.csproj` files not existing. I was able to replicate the Terraform error via the resulting directory from the `dotnet publish` command.
+
+### Local CLI Deployment Breakthrough
+
+I am unsure what changed, but I was able to used `gcloud functions deploy` with the following configuration to achieve a successful deployment from the source directory.
+
+```
+gcloud functions deploy <FUNCTION_NAME> \
+    --region europe-west2 \
+    --source=. \
+    --entry-point=gcp_host_receiver.receiver \
+    --runtime dotnet6 \
+    --trigger-http
+```
+
+There was one catch, however. An attempt to test the function directly in GCP's web interface threw an unhandled exception, which I assume relates back to the errors I received attempting to deploy from the source directly earlier, where receiver or data csproj files could not be found. More investigation and testing is required to understand what is going wrong during deployment preparations. Viewing and downloading the source zip from the Cloud Function shows that the data and receiver `.dll`'s are present in `/bin`. 
+
+I have not identified many good examples of C# deployments which feature multiple packaged dependencies, developed locally. This prevents me from understanding how Cloud Functions prepares Functions with dependencies, which would allow me to adjust my development method accordingly.
+
+```
+System.IO.FileNotFoundException: Could not load file or assembly 'receiver, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.
+
+File name: 'receiver, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null'
+   at gcp_host_receiver.receiver.HandleAsync(HttpContext context)
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at gcp_host_receiver.receiver.HandleAsync(HttpContext context)
+   at Google.Cloud.Functions.Hosting.HostingInternals.Execute(HttpContext context)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol.ProcessRequests[TContext](IHttpApplication`1 application)
+```

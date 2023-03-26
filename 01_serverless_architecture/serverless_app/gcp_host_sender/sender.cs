@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using data;
 using sender;
 
-namespace gcp_host
+namespace gcp_host_sender
 {
     public class sender : IHttpFunction
     {

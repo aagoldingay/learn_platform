@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using receiver;
 
-namespace gcp_host
+namespace gcp_host_receiver
 {
     public class receiver : IHttpFunction
     {

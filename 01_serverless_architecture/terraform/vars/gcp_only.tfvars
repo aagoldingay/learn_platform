@@ -1,3 +1,3 @@
-google_provider_project =  ""
-google_provider_region = ""
-google_provider_zone = ""
+deploy_gcp  = true
+gcp_send    = true
+gcp_receive = true

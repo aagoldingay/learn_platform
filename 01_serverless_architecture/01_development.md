@@ -138,6 +138,29 @@ So far, I have had no success configuring local environment variables. I believe
 
 ### Testing
 ```
-dotnet run --project gcp_host_sender/gcp_host_sender.csproj --port 8080
-dotnet run --project gcp_host_receiver/gcp_host_receiver.csproj --port 8081
+dotnet run --project gcp_host_receiver/gcp_host_receiver.csproj --port 8080
+dotnet run --project gcp_host_sender/gcp_host_sender.csproj --port 8081
 ```
+
+Due to the present difficulty with setting up environment variables appropriately, local testing can only take place on the GCP Receiver. This was successful via Postman POST requests, manually creating the HTTP request body in JSON, in the same way the Sender function would.
+
+```
+[
+    {
+        "Id": 1,
+        "Item": "Pen",
+        "Quantity": 5,
+        "Note": "Deliver ASAP"
+    },
+    {
+        "Id": 2,
+        "Item": "Paper",
+        "Quantity": 2,
+        "Note": "Deliver ASAP"
+    }
+]
+```
+
+By using the `dotnet run` command above, I could prove that the deployment difficulties I experienced were not necessarily a result of bad code.
+
+<img src="images/local_test_gcp_receiver.png">
