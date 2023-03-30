@@ -334,30 +334,7 @@ A subsequent attempt to use `dotnet publish` across the whole C# project, zipped
 
 I then decided to try zipping the C# project, this time skipping the call to `dotnet publish`. Combined with the earlier success of setting `GOOGLE_BUILDABLE`, the following Terraform apply was successful!
 
-
-## Automation
-
-I handled deployment locally for this project, due to the learning curve required for GCP. Using `/automation_scripts/local_azure_build_deploy.ps1`, the C# project could be built, tested and the Terraform validated and applied. Furthermore, the use of CLIs throughout development made it easier to string together the commands required to deploy Azure functions.
-
-More work is still required on this to integrate GCP.
-
-### Workflow
-
-Whether writing a script to speed up development locally, or using a CI/CD platform, there are some consistent steps to be taken:
-
-1. Build
-1. Test
-1. Package
-1. Deploy Infrastructure
-1. Deploy Code
-
-Any failures in one step should prevent the script from actioning something later. For example, a failing build will not permit testing to run. Without successful tests, there would be no benefit from deploying code.
-
 ## Findings
-
-### Azure - Retrieving Receiver's Function Key
-
-I had noticed that (on 24/03/2023) Function App keys can take a while to appear on Azure Portal. The first successful, complete deployment spent ~5 minutes waiting for a successful response from Azure Resource Manager to populate the Terraform `azurerm_function_app_host_keys` resource. Subsequent creations then failed to retrieve a key, and the key did not appear in Azure after an hour, leaving Terraform state file in an unrecoverable way, leading to manual cleanup.
 
 ### Azure to Azure
 
@@ -375,6 +352,10 @@ Azure Portal > Receiver or Sender Function App > Advanced Tools > "Go" > Debug C
 
 The screenshot shows the renamed log files from Sender and Receiver, demonstrating with timestamps, that Sender triggered first. It then sent a request to Receiver, waited for a successful response, then logged the receiver's success, and completed.
 
+#### Azure - Retrieving Receiver's Function Key
+
+I had noticed that (on 24/03/2023) Function App keys can take a while to appear on Azure Portal. The first successful, complete deployment spent ~5 minutes waiting for a successful response from Azure Resource Manager to populate the Terraform `azurerm_function_app_host_keys` resource. Subsequent creations then failed to retrieve a key, and the key did not appear in Azure after an hour, leaving Terraform state file in an unrecoverable way, leading to manual cleanup.
+
 ### GCP to GCP
 
 After having several breakthroughs in Cloud Function deployments, I had amended the Terraform configuration accordingly. Due to the sender function's dependency on the receiver being created first, I was able to test the receiver was operation via a full C# project zip before the Terraform apply had completed. Following the apply's successful completion, I triggered the sender function with a GET request directly in the Testing tab in GCP's web interface. The resulting screenshots, similar to that of Azure to Azure, proved that the sender function triggered the receiver, and both had completed successfully.
@@ -382,3 +363,65 @@ After having several breakthroughs in Cloud Function deployments, I had amended 
 <img src="images/gcp_to_gcp_sender_logs.png">
 
 <img src="images/gcp_to_gcp_receiver_logs.png">
+
+### GCP Send to Azure Receiver
+
+The next phase involves deploying the functions cross-cloud, and confirming that they can successfully interact. I had concerns about this due to the issues retrieving the Azure Function key during Azure to Azure deployment. Fortunately, the host key retrieval (or generation, so I am lead to believe) was more reliable on that day.
+
+As I already knew how to quickly handle Azure Function authentication (though not best practice), by using function or host keys in the query string, Azure hosted the Receiver function first.
+
+Once set up was complete, I was able to prove that GCP had a successfully configured `RECEIVERADDR` setting, pointing to the Azure Receiver Function.
+
+<img src="images/gcp_send_az_receive_gcp_env_var.png">
+
+The next step was to trigger the Sender function to test this configuration's success. This ran without issue on the first attempt, as illustrated by the logs.
+
+<img src="images/gcp_send_az_receive_logs.png">
+
+### Azure Send to GCP Receiver
+
+I was quite prepared for the final, alternative configuration to throw several errors relating to authentication when the Sender function in Azure attempted to send a request to the Receiver function in GCP. Evidently, I had enough default set up inferred from various documentation that meant I did not need to provide a function key or impersonate another user or application (e.g. using a similar approach to Azure's App Registrations).
+
+The deployment was successful, however due to having recently tidied up from GCP Send to Azure Receive, there was a conflict on the name of the Azure Storage Account. This was rectified by rerunning `terraform apply`.
+
+The Azure Function had successfully populated the `RECEIVERADDR` setting, pointing to the GCP Receiver Function.
+
+<img src="images/az_send_gcp_receive_env_var.png">
+
+Finally, executing the Sender Function was able to successfully invoke GCP's Receiver. 
+
+<img src="images/az_send_gcp_receive_logs.png">
+
+## Streamlining Deployment
+
+Due to the intention of this project to reconfigure the infrastructure to demonstrate different cloud deployments, it is incredibly helpful to have a method of deploying where there is less manual intervention. 
+
+In `/automation_scripts`, there is a single PowerShell (Core) script, named `local_azure_build_deploy.ps1` which was created to reflect what a CI/CD pipeline would achieve.
+
+This script enables myself and anyone else to quickly configure a deployment to Azure or GCP. 
+
+```
+# deploy Azure only
+.\local_build_deploy.ps1 -deploy_azure
+
+# deploy GCP send, Azure receive
+.\local_build_deploy.ps1 -deploy_azure -deploy_gcp -az_receiver
+
+# destroy GCP only deployment
+.\local_build_deploy.ps1 -deploy_gcp -destroy
+
+# deploy Azure only, skip build
+.\local_build_deploy.ps1 -deploy_azure -skip_build
+```
+
+### Workflow
+
+Whether writing a script to speed up development locally, or using a CI/CD platform, there are some consistent steps to be taken:
+
+1. Build
+1. Test
+1. Package
+1. Deploy Infrastructure
+1. Deploy Code
+
+Any failures in one step should prevent the script from actioning something later. For example, a failing build will not permit testing to run. Without successful tests, there would be no benefit from deploying code.

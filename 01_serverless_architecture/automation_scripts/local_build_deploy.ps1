@@ -1,9 +1,9 @@
 param (
     [string]
-    $tenant_id = "",
+    $project_name = "",
 
     [switch]
-    $deploy_azure = $true,
+    $deploy_azure = $false,
 
     [switch]
     $deploy_gcp = $false,
@@ -49,45 +49,34 @@ function Evaluate_Output {
     }
 }
 
-if ($destroy) {
-
-    $az_login_output = az login -t $tenant_id
-    
+if ($destroy) {    
     Evaluate_Output -id "AZURE LOGIN" -log ($az_login_output -join "; ")
     
-    cd ../terraform
+    Set-Location ../terraform
 
     Write-Host "# DESTROYING INFRASTRUCTURE ..."
     
     if ($deploy_azure -and !$deploy_gcp) {
         $var_file = "az_only.tfvars"
-        
-    
-        # } elseif ($deploy_gcp -and !$deploy_azure) {
-    
-        #     Write-Host "# # GCP ONLY ..."
-    
-        # } else {
-    
-        #     Write-Host "# # AZ AND GCP"
-        #     az login -t $tenant_id
-    
-        #     if ($az_receiver) {
-    
-        #         # deploy where az hosts receiver
-    
-        #     } else {
-    
-        #         # deploy where gcp hosts receiver
-    
-        #     }
+    }
+    elseif ($deploy_gcp -and !$deploy_azure) {
+        $var_file = "gcp_only.tfvars"
+    }
+    else {    
+        if ($az_receiver) {
+            $var_file = "gcp_send_az_receive.tfvars"    
+        }
+        else {
+            $var_file = "az_send_gcp_receive.tfvars"
+        }
     }
 
     $tf_output = terraform destroy -var-file="vars/secrets.tfvars" -var-file="vars/$var_file" -auto-approve
     
     Evaluate_Output -id "TERRAFORM DESTROY" -log ($tf_output -join "; ")
 
-} else {
+}
+else {
 
     if (!$skip_build) {
         Write-Host "# BUILDING serverless_app ..."
@@ -106,20 +95,24 @@ if ($destroy) {
     }
 
     if (!$skip_code_deploy) {
-        # Write-Host "# ARCHIVING C# PROJECT FOR GCP DEPLOY"
+        Write-Host "# ARCHIVING C# PROJECT FOR GCP DEPLOY"
         
-        #     Compress-Archive -LiteralPath serverless_app -DestinationPath gcp_host_receiver.zip -Force
-        #     Compress-Archive -LiteralPath serverless_app -DestinationPath gcp_host_sender.zip -Force
-        #     Evaluate_Output
-        # }
+        if ($deploy_gcp) {
+            if (!$deploy_az -or ($deploy_az -and !$az_receiver)) {
+                $gcp_receiver_output = Compress-Archive -LiteralPath ../serverless_app -DestinationPath gcp_host_receiver.zip -Force
+                Evaluate_Output -id "GCP RECEIVER ARCHIVE" -log ($gcp_receiver_output -join "; ")
+            }
+
+            if (!$deploy_az -or ($deploy_azure -and $az_receiver)) {
+                $gcp_sender_output = Compress-Archive -LiteralPath ../serverless_app -DestinationPath gcp_host_sender.zip -Force
+                Evaluate_Output -id "GCP SENDER ARCHIVE" -log ($gcp_sender_output -join "; ")
+            }
+            # }
+        }
     }
 
     if (!$skip_infra) {
-        $az_login_output = az login -t $tenant_id
-
-        Evaluate_Output -id "AZURE LOGIN" -log ($az_login_output -join "; ")
-
-        cd ../terraform
+        Set-Location ../terraform
         Write-Host "# INITIALISING TERRAFORM"
 
         $tf_output = terraform init
@@ -136,26 +129,19 @@ if ($destroy) {
         
         if ($deploy_azure -and !$deploy_gcp) {
             $var_file = "az_only.tfvars"
-            
-        
-            # } elseif ($deploy_gcp -and !$deploy_azure) {
-        
-            #     Write-Host "# # GCP ONLY ..."
-        
-            # } else {
-        
-            #     Write-Host "# # AZ AND GCP"
-            #     az login -t $tenant_id
-        
-            #     if ($az_receiver) {
-        
-            #         # deploy where az hosts receiver
-        
-            #     } else {
-        
-            #         # deploy where gcp hosts receiver
-        
-            #     }
+        }
+        elseif ($deploy_gcp -and !$deploy_azure) {
+            $var_file = "gcp_only.tfvars"
+    
+        }
+        else {
+            if ($az_receiver) {
+                $var_file = "gcp_send_az_receive.tfvars"
+    
+            }
+            else {
+                $var_file = "az_send_gcp_receive.tfvars"
+            }
         }
 
         if (!$tf_apply_only) {
@@ -173,17 +159,33 @@ if ($destroy) {
 
     if (!$skip_code_deploy) {
         if ($deploy_azure -and !$deploy_gcp) {
-            cd ../serverless_app/azure_host_receiver
-            $receiver_deploy_output = func azure functionapp publish 01-serverless-receiver
+            Set-Location ../serverless_app/azure_host_receiver
+            $receiver_deploy_output = func azure functionapp publish $project_name-receiver
 
             Evaluate_Output -id "RECEIVER DEPLOY" -log ($receiver_deploy_output -join "; ")
         
-            cd ../azure_host_sender
-            $sender_deploy_output = func azure functionapp publish 01-serverless-sender
+            Set-Location ../azure_host_sender
+            $sender_deploy_output = func azure functionapp publish $project_name-sender
 
             Evaluate_Output -id "SENDER DEPLOY" -log ($sender_deploy_output -join "; ")
         }
-        # GCP configurations
+        elseif ($deploy_gcp -and !$deploy_azure) {
+            # nothing
+        }
+        else {
+            if ($az_receiver) {
+                Set-Location ../serverless_app/azure_host_receiver
+                $receiver_deploy_output = func azure functionapp publish $project_name-receiver
+
+                Evaluate_Output -id "RECEIVER DEPLOY" -log ($receiver_deploy_output -join "; ")
+            }
+            else {
+                Set-Location .../serverless_app/azure_host_sender
+                $sender_deploy_output = func azure functionapp publish $project_name-sender
+
+                Evaluate_Output -id "SENDER DEPLOY" -log ($sender_deploy_output -join "; ")
+            }
+        }
     }
 
 }
