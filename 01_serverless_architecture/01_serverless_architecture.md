@@ -1,4 +1,4 @@
-# 01_SERVERLESS_ARCHITECTURE
+# 01: SERVERLESS ARCHITECTURE
 
 Number One. How to deploy platform architecture consisting of multiple serverless functions.
 
