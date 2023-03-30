@@ -1,12 +1,12 @@
 # Contributing
 
-Are you interested in getting involved? I'm happy for you to raise issues and Pull Requests to correct documentation, bugs unbeknownst to me, or  improvements.
+Are you interested in getting involved? I'm happy for you to raise issues and Pull Requests to correct documentation, bugs unbeknownst to me, or improvements.
 
 This is intended to be a learning experience, so issues raised which fundamentally change a problem space may not be accepted, sorry! 
 
 ## Do you have an idea for a problem space to solve?
 
-Raise it as an issue - I'm always happy to hear suggestions. I find it difficult to come up with project ideas (this has resulted in countless unproductive hackathons...) so that would be a massive help to me at least!
+Raise it as an issue - I'm always happy to hear suggestions. I find it difficult to come up with project ideas (this has resulted in countless unproductive hackathons...), so that would be a massive help to me at least!
 
 Alternatively, if you don't know how to do what you would like to suggest, have a go yourself!
 

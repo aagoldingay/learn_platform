@@ -425,3 +425,11 @@ Whether writing a script to speed up development locally, or using a CI/CD platf
 1. Deploy Code
 
 Any failures in one step should prevent the script from actioning something later. For example, a failing build will not permit testing to run. Without successful tests, there would be no benefit from deploying code.
+
+## Parting Statements
+
+This marks the end of Problem Space 01! 
+
+It was incredibly rewarding to slowly piece this project together from scratch, in a way that made sense to me, instead of deploying an example from somewhere else.
+
+All C# code and Terraform configurations included was working as of 30/03/2023. I have no doubt that in roughly a year, this project would require a version change for Azure Functions.

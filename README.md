@@ -1,6 +1,6 @@
 # LEARN_PLATFORM
 
-At the time of creating problem space 01, I have 3 years of experience as a Platform / Systems / DevOps Engineer, and 1 year of experience as a Software Engineer using C#.
+At the time of creating problem space 01, I have 4 years of experience as a Platform / Systems / DevOps Engineer, and 1 year of experience as a Software Engineer using C#.
 
 Although I have enjoyed learning about Azure, I hold the belief that online services hosted in the cloud should exist in multiple cloud providers concurrently. Meaning, should Azure have an outage, the service remains operational thanks to hosting in AWS as well. I have come to refer to platforms achieving this as being "cloud agnostic". A quick Google search shows I'm not the only one!
 
