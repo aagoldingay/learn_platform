@@ -5,8 +5,7 @@ resource "google_storage_bucket" "function_store" {
 }
 
 # requires the following commands to be run first, from /automation_scripts:
-# dotnet publish ../serverless_app/gcp_host_receiver -o gcp_host_receiver
-# Compress-Archive -LiteralPath gcp_host_receiver -DestinationPath gcp_host_receiver.zip
+# Compress-Archive -LiteralPath ../serverless_app -DestinationPath gcp_host_receiver.zip
 resource "google_storage_bucket_object" "receiver" {
   count  = var.deploy_gcp && var.gcp_receive ? 1 : 0
   name   = "gcp_host_receiver.zip"
@@ -15,8 +14,7 @@ resource "google_storage_bucket_object" "receiver" {
 }
 
 # requires the following commands to be run first, from /automation_scripts:
-# dotnet publish ../serverless_app/gcp_host_sender -o gcp_host_sender
-# Compress-Archive -LiteralPath gcp_host_sender -DestinationPath gcp_host_sender.zip
+# Compress-Archive -LiteralPath ../serverless_app -DestinationPath gcp_host_sender.zip
 resource "google_storage_bucket_object" "sender" {
   count  = var.deploy_gcp && var.gcp_send ? 1 : 0
   name   = "gcp_host_sender.zip"
