@@ -249,7 +249,7 @@ terraform plan -var-file="vars/secrets.tfvars" -var-file="vars/az_only.tfvars"
 
 The initial proof of concept is Azure to Azure communication between Receiver and Sender. I needed to successfully and reliably configure the `RECEIVERADDR` to reference the Receiver function. A simplified version of this line can be found below. It's complexity increases due to the intention to call Azure from GCP and vice versa under differenf configurations. 
 
-```terraform
+```hcl
 # terraform/az_deps.tf (line 29 - azurerm_linux_function_app.sender)
 app_settings = {
     "RECEIVERADDR" = "https://${azurerm_linux_function_app.receiver[0].default_hostname}/api/receiver?code=${data.azurerm__function_app_host_keys.receiver[0].default_function_key}"
@@ -333,6 +333,49 @@ gcloud functions deploy fnc-receiver --region europe-west2 --source=. --entry-po
 A subsequent attempt to use `dotnet publish` across the whole C# project, zipped and deployed with Terraform produced the same errors as previously. 
 
 I then decided to try zipping the C# project, this time skipping the call to `dotnet publish`. Combined with the earlier success of setting `GOOGLE_BUILDABLE`, the following Terraform apply was successful!
+
+### Terraform Conditions to Deploy Each Configuration
+
+I had the idea of using only one set of Terraform configuration files to deploy or destory the Sender, Receiver and dependencies, regardless of the cloud being used. 
+
+The different configurations can be executed as follows:
+
+```cmd
+terraform plan -var-file="vars/secrets.tfvars" -var-file="vars/az_only.tfvars"
+terraform plan -var-file="vars/secrets.tfvars" -var-file="vars/gcp_only.tfvars"
+terraform plan -var-file="vars/secrets.tfvars" -var-file="vars/az_send_gcp_receive.tfvars"
+terraform plan -var-file="vars/secrets.tfvars" -var-file="vars/gcp_send_az_receive.tfvars"
+```
+
+Terraform supports conditions which enable certain resources to be created or not based on the variables or resource attributes. Furthermore, certain values can be assigned to a resource attribute in the same way. 
+
+The conditions can be very powerful, but they do introduce some complexity to readability. Resources with conditions can also be more challenging to make changes to.
+
+```hcl
+# /terraform/az_funcs.tf
+
+# The count attribute controls how many will be deployed
+# To retrieve the name attribute, it must be referenced as azurerm_resource_group.rsg[0].name
+
+resource "azurerm_resource_group" "rsg" {
+  count    = var.deploy_az ? 1 : 0
+  name     = "01_serverless"
+  location = "UK West"
+}
+
+# ...
+
+# This environment variable value changes based on var.az_receive
+# The condition is evaluated (true or false), followed by the outcome. An else outcome is present, which is denoted after the ':'
+
+resource "azurerm_windows_function_app" "sender" {
+  # ...
+  app_settings = {
+    "RECEIVERADDR"             = var.az_receive ? "https://${azurerm_windows_function_app.receiver[0].default_hostname}/api/receiver?code=${data.azurerm_function_app_host_keys.receiver[0].default_function_key}" : google_cloudfunctions_function.receiver[0].https_trigger_url
+    "WEBSITE_RUN_FROM_PACKAGE" = 1
+  }
+}
+```
 
 ## Findings
 
